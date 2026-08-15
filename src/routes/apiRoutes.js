@@ -8,6 +8,7 @@ const diagnosticsService = require("../services/diagnosticsService");
 const metadataService = require("../services/metadataService");
 const adminService = require("../services/adminService");
 const requireInternalAuth = require("../middleware/requireInternalAuth");
+const requireStaffAuth = require("../middleware/requireStaffAuth");
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.get("/api/files", (req, res) => {
   return res.type("text/plain").send(result.content);
 });
 
-router.get("/api/fetch", async (req, res) => {
+router.get("/api/fetch", requireStaffAuth, async (req, res) => {
   const result = await previewService.fetchRemote(req.query.url);
   return res.status(result.status).type("text/plain").send(result.body);
 });
