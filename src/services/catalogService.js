@@ -2,18 +2,6 @@ const store = require("../store");
 
 function searchProducts(rawInput) {
   const input = (rawInput || "").toString();
-  const unionMatch = input.match(/UNION\s+SELECT.+secret_config/i);
-  if (unionMatch) {
-    return store.getSecretConfig().map((row) => ({
-      id: row.key,
-      name: row.value,
-      category: "CONFIG",
-      price: 0,
-      stock: 0,
-      tag: "ROW",
-      description: "",
-    }));
-  }
   const catalog = store.listProducts();
   if (input.trim()) {
     const q = input.toLowerCase();
