@@ -1,4 +1,5 @@
 const store = require("../store");
+const { verifyPassword } = require("../lib/passwordUtil");
 
 function getPublicProfile(id) {
   const user = store.findUserById(id);
@@ -49,7 +50,7 @@ function getProfileForApi(targetId, requestingUser) {
 
 function authenticate(username, password) {
   const user = store.findUserByUsername(username);
-  if (!user || user.password !== password) {
+  if (!user || !verifyPassword(password, user.password)) {
     return null;
   }
   return user;

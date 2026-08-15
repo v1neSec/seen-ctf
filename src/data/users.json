@@ -2,7 +2,7 @@
   {
     "id": 1,
     "username": "alice.admin",
-    "password": "admin2024",
+    "password": "scrypt$16384$8$1$8+ioIHWhUFIpCmjEod1Jww==$xTncb3Icza01Zmg89kT6A/VoV9VlqrwgAqOZU1KGr52+23wA/KxoWLggwigUFNkXmB5NRmZy05E0/u6NvWjdsw==",
     "fullName": "Alice Admin",
     "email": "alice@acmeshop.internal",
     "role": "ADMINISTRATOR",
@@ -32,7 +32,7 @@
   {
     "id": 2,
     "username": "bob.shopper",
-    "password": "shopper123",
+    "password": "scrypt$16384$8$1$qzvGSGchW39DeBn+nPdXVw==$OGw70yTfgKKL8wxi0M3oPjG15lkKV2U16tggXfyzXpLWA2oaCSLeFE41x1c8UtRHw5OjCok3hPo5zBL8SIGc0g==",
     "fullName": "Bob Shopper",
     "email": "bob@example.com",
     "role": "CUSTOMER",
