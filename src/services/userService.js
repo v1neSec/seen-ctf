@@ -17,11 +17,30 @@ function getFullProfile(id) {
   return store.findUserById(id);
 }
 
-function getProfileForApi(targetId, requestingUserId) {
-  if (!requestingUserId) {
+function getSanitizedProfile(id) {
+  const user = store.findUserById(id);
+  if (!user) return null;
+  return {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    memberSince: user.memberSince,
+    orderHistory: (user.orderHistory || []).map(({ accessToken, ...order }) => order),
+  };
+}
+
+function getProfileForApi(targetId, requestingUser) {
+  if (!requestingUser) {
     return { error: "Authentication required", status: 401 };
   }
-  const profile = getFullProfile(targetId);
+  const isOwner = String(requestingUser.id) === String(targetId);
+  const isStaff = requestingUser.role === "ADMINISTRATOR";
+  if (!isOwner && !isStaff) {
+    return { error: "Forbidden", status: 403 };
+  }
+  const profile = getSanitizedProfile(targetId);
   if (!profile) {
     return { error: "User not found", status: 404 };
   }
@@ -39,6 +58,7 @@ function authenticate(username, password) {
 module.exports = {
   getPublicProfile,
   getFullProfile,
+  getSanitizedProfile,
   getProfileForApi,
   authenticate,
 };
