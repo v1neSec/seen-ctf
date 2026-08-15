@@ -1,5 +1,5 @@
+const jwt = require("jsonwebtoken");
 const flagService = require("./flagService");
-const CryptoUtil = require("../lib/cryptoUtil");
 
 const ADMIN_DASHBOARD = {
   status: "operational",
@@ -9,18 +9,32 @@ const ADMIN_DASHBOARD = {
   internal_ops_token: flagService.getSlot("FLAG5"),
 };
 
+const JWT_SECRET = process.env.STAFF_JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("STAFF_JWT_SECRET is not configured");
+}
+
 function verifyAdminToken(rawToken) {
   if (!rawToken) {
     return { status: 401, body: { error: "Authorization header required" } };
   }
-  const header = CryptoUtil.parseJwtHeader(rawToken);
-  if (!header) {
-    return { status: 401, body: { error: "Malformed token" } };
+
+  let payload;
+  try {
+    payload = jwt.verify(rawToken, JWT_SECRET, {
+      algorithms: ["HS256"],        
+      issuer: "toda-internal-auth",
+      audience: "staff-admin-api",
+    });
+  } catch (err) {
+    return { status: 401, body: { error: "Invalid or expired token" } };
   }
-  if (header.alg === "none" || header.alg === "NONE") {
-    return { status: 200, body: ADMIN_DASHBOARD };
+
+  if (payload.role !== "admin") {
+    return { status: 403, body: { error: "Insufficient privileges" } };
   }
-  return { status: 403, body: { error: "Invalid token signature" } };
+
+  return { status: 200, body: ADMIN_DASHBOARD };
 }
 
 module.exports = { verifyAdminToken };
