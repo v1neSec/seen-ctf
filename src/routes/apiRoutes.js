@@ -7,6 +7,7 @@ const previewService = require("../services/previewService");
 const diagnosticsService = require("../services/diagnosticsService");
 const metadataService = require("../services/metadataService");
 const adminService = require("../services/adminService");
+const { requireApiStaff } = require("../middleware/apiAuth");
 
 const router = express.Router();
 
@@ -21,8 +22,7 @@ router.get("/__internal/metadata", (req, res) => {
 });
 
 router.get("/api/users/:id/profile", (req, res) => {
-  const requestingUserId = req.headers["x-user-id"];
-  const result = userService.getProfileForApi(req.params.id, requestingUserId);
+  const result = userService.getProfileForApi(req.params.id, req.user);
   if (result.error) {
     return res.status(result.status).json({ error: result.error });
   }
@@ -53,7 +53,7 @@ router.get("/api/admin/secret", (req, res) => {
   return res.status(result.status).json(result.body);
 });
 
-router.get("/api/ping", (req, res) => {
+router.get("/api/ping", requireApiStaff, (req, res) => {
   diagnosticsService.runPing(req.query.host, (_err, output) => {
     res.type("text/plain").send(output);
   });
