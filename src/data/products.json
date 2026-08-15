@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Acme Anvil 5000",
+    "category": "Tools",
+    "price": 99.99,
+    "stock": 42,
+    "tag": "Best Seller",
+    "description": "Precision-forged anvil for the discerning cartoon engineer. Drop-tested from 10,000 ft."
+  },
+  {
+    "id": 2,
+    "name": "Acme Rocket Boots",
+    "category": "Footwear",
+    "price": 499.99,
+    "stock": 7,
+    "tag": "New",
+    "description": "Instant thrust with optional smoke trail. Not recommended for indoor use."
+  },
+  {
+    "id": 3,
+    "name": "Acme Portable Hole",
+    "category": "Gadgets",
+    "price": 299.99,
+    "stock": 15,
+    "tag": "Popular",
+    "description": "Store flat, deploy anywhere. Perfect for quick escapes and creative landscaping."
+  },
+  {
+    "id": 4,
+    "name": "Acme Spring-Loaded Gloves",
+    "category": "Accessories",
+    "price": 149.99,
+    "stock": 28,
+    "tag": "Sale",
+    "description": "Extend your reach up to six feet. Batteries not included."
+  },
+  {
+    "id": 5,
+    "name": "Acme Instant Tunnel Kit",
+    "category": "Gadgets",
+    "price": 899.99,
+    "stock": 3,
+    "tag": "Limited",
+    "description": "Paint a tunnel on any surface and walk through. Results may vary by physics jurisdiction."
+  },
+  {
+    "id": 6,
+    "name": "Acme Dehydrated Boulders",
+    "category": "Tools",
+    "price": 59.99,
+    "stock": 120,
+    "tag": "Bulk",
+    "description": "Just add water for instant boulder. Each packet expands to 2 tons."
+  }
+]

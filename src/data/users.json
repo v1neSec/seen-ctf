@@ -1,0 +1,49 @@
+[
+  {
+    "id": 1,
+    "username": "alice.admin",
+    "password": "admin2024",
+    "fullName": "Alice Admin",
+    "email": "alice@acmeshop.internal",
+    "role": "ADMINISTRATOR",
+    "memberSince": "2020-01-15",
+    "orderHistory": [
+      {
+        "orderId": "ORD-0001",
+        "item": "Acme Anvil 5000",
+        "total": 99.99,
+        "status": "Delivered"
+      },
+      {
+        "orderId": "ORD-0002",
+        "item": "Acme Rocket Boots",
+        "total": 499.99,
+        "status": "Delivered"
+      },
+      {
+        "orderId": "ORD-0003",
+        "item": "Acme Portable Hole",
+        "total": 299.99,
+        "status": "Pending",
+        "accessToken": ""
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "username": "bob.shopper",
+    "password": "shopper123",
+    "fullName": "Bob Shopper",
+    "email": "bob@example.com",
+    "role": "CUSTOMER",
+    "memberSince": "2022-08-10",
+    "orderHistory": [
+      {
+        "orderId": "ORD-1001",
+        "item": "Acme Portable Hole",
+        "total": 299.99,
+        "status": "Delivered"
+      }
+    ]
+  }
+]
