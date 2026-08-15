@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const { PORT, APP_NAME } = require("./config/appConfig");
@@ -22,6 +23,19 @@ const webRoutes = require("./routes/webRoutes");
 store.initStore();
 
 const app = express();
+
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString("base64url");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader(
+    "Content-Security-Policy",
+    `default-src 'self'; script-src 'nonce-${res.locals.nonce}'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'`
+  );
+  next();
+});
+
 app.use(express.static(path.join(__dirname, "../public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

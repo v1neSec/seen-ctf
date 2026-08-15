@@ -7,6 +7,8 @@ const previewService = require("../services/previewService");
 const diagnosticsService = require("../services/diagnosticsService");
 const metadataService = require("../services/metadataService");
 const adminService = require("../services/adminService");
+const requireInternalAuth = require("../middleware/requireInternalAuth");
+const { requireAuth, requireStaff } = require("../middleware/apiAuth");
 
 const router = express.Router();
 
@@ -16,13 +18,13 @@ router.post("/__gm/verify", (req, res) => {
   res.status(result.status).json(result.data);
 });
 
-router.get("/__internal/metadata", (req, res) => {
+router.get("/__internal/metadata", requireInternalAuth, (req, res) => {
   res.json(metadataService.getInstanceMetadata());
 });
 
-router.get("/api/users/:id/profile", (req, res) => {
-  const requestingUserId = req.headers["x-user-id"];
-  const result = userService.getProfileForApi(req.params.id, requestingUserId);
+
+router.get("/api/users/:id/profile", requireAuth, (req, res) => {
+  const result = userService.getProfileForApi(req.params.id, req.user);
   if (result.error) {
     return res.status(result.status).json({ error: result.error });
   }
@@ -34,7 +36,7 @@ router.get("/api/products/search", (req, res) => {
   return res.json(products);
 });
 
-router.get("/api/files", (req, res) => {
+router.get("/api/files", requireStaff, (req, res) => {
   const result = documentService.readDocument(req.query.path);
   if (!result.success) {
     return res.status(404).send(result.error);
@@ -42,18 +44,18 @@ router.get("/api/files", (req, res) => {
   return res.type("text/plain").send(result.content);
 });
 
-router.get("/api/fetch", async (req, res) => {
+router.get("/api/fetch", requireStaff, async (req, res) => {
   const result = await previewService.fetchRemote(req.query.url);
   return res.status(result.status).type("text/plain").send(result.body);
 });
 
-router.get("/api/admin/secret", (req, res) => {
+router.get("/api/admin/secret", requireStaff, (req, res) => {
   const rawToken = (req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
   const result = adminService.verifyAdminToken(rawToken);
   return res.status(result.status).json(result.body);
 });
 
-router.get("/api/ping", (req, res) => {
+router.get("/api/ping", requireStaff, (req, res) => {
   diagnosticsService.runPing(req.query.host, (_err, output) => {
     res.type("text/plain").send(output);
   });

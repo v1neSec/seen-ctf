@@ -17,6 +17,13 @@ const GRADER_KEYS = {
   FLAG6: "FLAG6",
 };
 
+function constantTimeEqual(a, b) {
+  const left = Buffer.from(String(a || ""));
+  const right = Buffer.from(String(b || ""));
+  if (left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
+
 class FlagService {
   getSlot(name) {
     return VALUES[name] || "";
@@ -31,7 +38,7 @@ class FlagService {
       authHeader && authHeader.startsWith("Bearer ")
         ? authHeader.slice(7)
         : null;
-    if (!token || token !== GM_TOKEN) {
+    if (!token || !constantTimeEqual(token, GM_TOKEN)) {
       return { status: 401, data: { error: "Unauthorized request" } };
     }
     if (!vulnId || !submittedHash) {
@@ -43,7 +50,7 @@ class FlagService {
       return { status: 200, data: { match: false } };
     }
     const expected = this.sha256(currentFlag);
-    return { status: 200, data: { match: expected === submittedHash } };
+    return { status: 200, data: { match: constantTimeEqual(expected, submittedHash) } };
   }
 }
 

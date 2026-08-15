@@ -22,6 +22,26 @@ function page(res, title, html, req) {
   );
 }
 
+function safeNext(value) {
+  const raw = (value || "/").toString();
+  return raw.startsWith("/") &&
+    !raw.startsWith("//") &&
+    !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw)
+    ? raw
+    : "/";
+}
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 5 * 60 * 1000;
+const loginAttempts = new Map();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of loginAttempts) {
+    if (now - entry.last > LOGIN_WINDOW_MS) loginAttempts.delete(key);
+  }
+}, LOGIN_WINDOW_MS).unref();
+
 function requireLogin(req, res, next) {
   if (!req.user) {
     return res.redirect("/login?next=" + encodeURIComponent(req.originalUrl));
@@ -131,7 +151,7 @@ router.get("/login", (req, res) => {
       <h2 style="margin-bottom:0.5rem;">Sign in</h2>
       <p style="color:var(--muted);margin-bottom:1rem;font-size:0.9rem;">Access your orders and checkout faster.</p>
       <form method="POST" action="/login">
-        <input type="hidden" name="next" value="${esc(req.query.next || "/")}" />
+        <input type="hidden" name="next" value="${esc(safeNext(req.query.next))}" />
         <div class="form-row">
           <label for="username">Username</label>
           <input class="input" id="username" name="username" required autocomplete="username" />
@@ -149,18 +169,27 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  const user = userService.authenticate(req.body.username, req.body.password);
+  const username = (req.body.username || "").toString().trim();
+  const key = username.toLowerCase();
+  const attempt = loginAttempts.get(key) || { count: 0, last: 0 };
+  if (attempt.count >= LOGIN_MAX_ATTEMPTS && Date.now() - attempt.last < LOGIN_WINDOW_MS) {
+    return res.redirect("/login?error=Too+many+attempts.+Please+try+again+later.");
+  }
+  const user = userService.authenticate(username, req.body.password);
   if (!user) {
+    attempt.count += 1;
+    attempt.last = Date.now();
+    loginAttempts.set(key, attempt);
     return res.redirect("/login?error=Invalid+credentials");
   }
+  loginAttempts.delete(key);
   const oldCart = req.session?.cart || [];
   if (req.sessionId) sessionLib.destroySession(req.sessionId);
   const sid = sessionLib.createSession(user.id);
   const sess = sessionLib.getSession(sid);
   sess.cart = oldCart;
   sessionLib.setSessionCookie(res, sid);
-  const next = (req.body.next || "/").toString();
-  res.redirect(next.startsWith("/") ? next : "/");
+  res.redirect(safeNext(req.body.next));
 });
 
 router.get("/logout", (req, res) => {
@@ -236,7 +265,7 @@ router.post("/checkout", requireLogin, (req, res) => {
 });
 
 router.get("/account", requireLogin, (req, res) => {
-  const profile = userService.getFullProfile(req.user.id);
+  const profile = userService.getSanitizedProfile(req.user.id);
   const orders = (profile.orderHistory || [])
     .map(
       (o) => `
@@ -378,7 +407,7 @@ router.get("/staff/admin", requireStaff, (req, res) => {
       <button class="btn" type="button" id="run">Query API</button>
     </div>
     <div class="card" id="out" style="display:none;"><pre id="outtext"></pre></div>
-    <script>
+    <script nonce="${res.locals.nonce || ""}">
       document.getElementById("run").onclick = async function () {
         const token = document.getElementById("token").value;
         const res = await fetch("/api/admin/secret", { headers: { Authorization: "Bearer " + token } });
